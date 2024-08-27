@@ -1,0 +1,16 @@
+# build
+.vscode/
+build/
+
+# data 
+data/
+
+# third_party 
+dll/
+third_party/
+
+# models
+models/
+
+# reference
+reference/
