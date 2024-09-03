@@ -7,11 +7,6 @@
 #undef max
 #undef min
 
-#include <vector>
-#include <map>
-#include <set>
-#include <limits>
-
 #include <opencv2/opencv.hpp>
 
 #define StateType cv::Rect_<float>
@@ -19,48 +14,36 @@
 class FaceTracker {
 private:
     cv::KalmanFilter kf;
-    cv::Mat_<float> measurement;
+    cv::Mat_<float> measurement; // 用以更新的观测矩阵
+    std::vector<cv::Rect_<float>> state_history; // 存储历史状态信息，以便后续分析或可视化
+
+public:
+    unsigned int id;
+    int age; // 跟踪器创建后的帧数
+    
     cv::Rect currentPosition; // 保存当前的跟踪位置
-    cv::Mat templateImage;
-    int missingcounter = 0;
+    cv::Rect_<float> lastState; // 存储最后一次更新的矩形状态
+    int time_since_update; // 自上次状态更新以来经过的时间
+    int num_hits; // 跟踪器命中次数，成功匹配到目标的次数
+    int continual_hits; // 连续成功匹配到目标的次数
+    static int kf_count; 
 
 public:
     FaceTracker();
-    FaceTracker(StateType stateMat);
-    void initialize(const cv::Rect& initial_bbox);
-    cv::Rect predict();
-    void update(const cv::Rect& new_bbox);
-    cv::Rect getCurrentPosition() const;
-    double calculateIoU(const cv::Rect& boxA, const cv::Rect& boxB);
-    bool match(const cv::Rect& detectedBox , double iouThreshold = 0.3);
-    int getMissingCounter() const ;
-    void increaseMissingCounter(); 
+    FaceTracker(cv::Rect_<float> stateMat);
+
+    ~FaceTracker();
+
+    void initialize(const cv::Rect_<float> stateMat);
+    cv::Rect_<float> predict();
+    void update(const cv::Rect_<float> new_bbox);
+    cv::Rect_<float> xysr2rect(float center_x , float center_y , float s , float r);
+    cv::Rect_<float> get_state();
+
+    // double calculateIoU(const cv::Rect& boxA, const cv::Rect& boxB);
 };
 
 
-class MultiObjectTracker {
-private:
-    double iouThreshold = 0.6;
-    int nextID = 0;
-    int maxMissingFrames = 200; // 最大容忍丢失帧数
-    std::map<int, FaceTracker> trackers; // ID -> KalmanTracker
-    std::set<int> activeIDs; // IDs of active trackers
-
-    bool matchTemplace = true;
-    std::vector<cv::Rect> previous_faces; // 存储上一帧的人脸存储结果
-
-    double calculateIoU(const cv::Rect& rect1, const cv::Rect& rect2);
-    std::vector<std::vector<double>> computeCostMatrix(const std::vector<cv::Rect>& detected_bboxes);
-    std::vector<int> hungarianAlgorithm(const std::vector<std::vector<double>>& costMatrix);
-    void removeInactiveTrackers();
-
-public:
-    MultiObjectTracker(double iouThreshold = 0.3);
-    void update(const std::vector<cv::Rect>& detected_bboxes);
-    std::unordered_map<int, cv::Rect> getTrackedObjects() const;
-    void initialize(const std::vector<cv::Rect>& detected_bboxes);
-    std::set<int> MultiObjectTracker::getActiveIDs() const ;
-};
 
 
 #endif // __FACE_TRACKER_H__

@@ -22,7 +22,8 @@ class SCRFD
 public:
     int load(std::string parampath , std::string modelpath , bool use_gpu);
 
-    int detect(const cv::Mat& rgb, std::vector<FaceObject>& faceobjects, float prob_threshold = 0.5f, float nms_threshold = 0.45f);
+    int detect(const cv::Mat& rgb, std::vector<FaceObject>& faceobjects, \
+        float prob_threshold = 0.5f, float nms_threshold = 0.45f);
 
     int draw(cv::Mat& rgb, const std::vector<FaceObject>& faceobjects);
 
