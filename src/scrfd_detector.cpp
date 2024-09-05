@@ -408,10 +408,6 @@ int SCRFD::draw(cv::Mat& rgb, const std::vector<FaceObject>& faceobjects)
     for (size_t i = 0; i < faceobjects.size(); i++)
     {
         const FaceObject& obj = faceobjects[i];
-
-        // fprintf(stderr, "%.5f at %.2f %.2f %.2f x %.2f\n", obj.prob,
-        //         obj.rect.x, obj.rect.y, obj.rect.width, obj.rect.height);
-
         cv::rectangle(rgb, obj.rect, cv::Scalar(0, 0, 255) , 2);
 
         if (has_kps)
