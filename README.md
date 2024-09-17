@@ -1,9 +1,11 @@
-
 # KalmanFilter-FaceTracker
+
 ## 简介
+
 基于人脸检测结果的KalmanFilter人脸跟踪器
 
 ## 整体项目目录
+
 ```
 │  .gitignore
 │  CMakeLists.txt
@@ -41,10 +43,12 @@
 ```
 
 ## 准备环境
+
 * OpenCV
 * NCNN【这里是因为实验用了NCNN框架使用模型来做人脸检测，实际应用还是用onnxruntime的】
 
 ## 构建
+
 ```
 # 在CMakeLists.txt所在的目录下构建build目录
 mkdir build
@@ -61,6 +65,7 @@ cmake --build .
 ```
 
 ## 运行
+
 ```
 # 在build目录下运行
 .\Release\demo.exe C:\\Users\\Administrator\\Desktop\\yolo-face-with-landmark-master\\ncnn_project\\data\\singlevideo
@@ -72,4 +77,5 @@ C:\Users\Administrator\Desktop\yolo-face-with-landmark-master\ncnn_project\build
 ```
 
 ## 许可说明
+
 MIT License
