@@ -56,7 +56,7 @@ def generate_anchors(base_size, ratios, scales):
 
 
 def generate_proposals(anchors, feat_stride, score_blob, bbox_blob, kps_blob, prob_threshold, faceobjects):
-    h, w = score_blob.shape[1:3]
+    h, w = score_blob.shape()[1:3]
     for q in range(anchors.shape[0]):
         anchor = anchors[q]
         score = score_blob[q]
@@ -119,7 +119,7 @@ class SCRFD:
         w, h = int(width * scale), int(height * scale)
 
         in_pad = cv2.resize(rgb, (w, h))
-        in_pad = cv2.cvtColor(in_pad, cv2.COLOR_BGR2RGB)  # 转换为RGB格式
+        in_pad = cv2.cvtColor(in_pad, cv2.COLOR_BGR2RGB)
         in_pad = in_pad.astype(np.float32)
 
         mean_vals = np.array([127.5, 127.5, 127.5], dtype=np.float32)
@@ -131,20 +131,32 @@ class SCRFD:
         extractor = self.scrfd.create_extractor()
 
         for stride in [8, 16, 32]:
-            score_blob, bbox_blob, kps_blob = None, None, None
-            extractor.input("input.1", in_pad)
-            extractor.extract(f"score_{stride}", score_blob)
-            extractor.extract(f"bbox_{stride}", bbox_blob)
-            if self.has_kps:
-                extractor.extract(f"kps_{stride}", kps_blob)
+            score_blob = ncnn.Mat()
+            bbox_blob = ncnn.Mat()
+            kps_blob = ncnn.Mat() if self.has_kps else None  # 确保 kps_blob 被初始化
 
-            if stride == 8:
-                base_size = 16
-            elif stride == 16:
-                base_size = 64
-            else:
-                base_size = 256
+            extractor.input("input.1", ncnn.Mat(in_pad))
+            print(f"尝试提取 score 和 bbox，当前 stride: {stride}")
 
+            try:
+                extractor.extract(f"score_{stride}", score_blob)
+                extractor.extract(f"bbox_{stride}", bbox_blob)
+                if self.has_kps:
+                    print(f"尝试提取 kps_{stride}")
+                    extractor.extract(f"kps_{stride}", kps_blob)
+            except Exception as e:
+                print(f"提取过程中发生错误: {e}")
+
+            # 检查提取的 blob 是否有效
+            if score_blob.empty() or bbox_blob.empty():
+                print(f"提取的 score_blob 或 bbox_blob 在 stride {stride} 上为空，可能构建失败")
+                continue  # 继续到下一个 stride
+
+            # 从 score_blob 获取大小
+            h, w = score_blob.shape()[1:3]  # 确保使用括号调用 shape
+
+            # 生成提案逻辑
+            base_size = 16 if stride == 8 else 64 if stride == 16 else 256
             anchors = generate_anchors(base_size, [1.0], [1.0, 2.0])
             generate_proposals(anchors, stride, score_blob, bbox_blob, kps_blob, prob_threshold, faceproposals)
 
@@ -171,12 +183,13 @@ class SCRFD:
 
 
 # 实际使用示例
-scrfd = SCRFD()
-scrfd.load('path_to_param', 'path_to_model')
-rgb_image = cv2.imread('path_to_image')
-face_objects = []
-scrfd.detect(rgb_image, face_objects, prob_threshold=0.5, nms_threshold=0.45)
-scrfd.draw(rgb_image, face_objects)
-cv2.imshow('Detection', rgb_image)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+if __name__ == '__main__':
+    scrfd = SCRFD()
+    scrfd.load('path_to_param', 'path_to_model')
+    rgb_image = cv2.imread('path_to_image')
+    face_objects = []
+    scrfd.detect(rgb_image, face_objects, prob_threshold=0.5, nms_threshold=0.45)
+    scrfd.draw(rgb_image, face_objects)
+    cv2.imshow('Detection', rgb_image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()

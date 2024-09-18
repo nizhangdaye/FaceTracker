@@ -2,6 +2,7 @@ import os
 import cv2
 import numpy as np
 from pathlib import Path
+
 from scrfd_detector import SCRFD
 from multiobject_tracker import MultiObjectTracker
 from utils import is_image_file, is_video_file, print_progress_bar
@@ -149,10 +150,18 @@ def main(dir_path):
 
 
 if __name__ == "__main__":
-    import sys
-    # 打印当前工作目录
-    print(os.getcwd())
-    if len(sys.argv) != 2:
-        print(f"Usage: {sys.argv[0]} [directory_path]")
-    else:
-        main(sys.argv[1])
+    # import sys
+    # # 打印当前工作目录
+    # print(os.getcwd())
+    # if len(sys.argv) != 2:
+    #     print(f"Usage: {sys.argv[0]} [directory_path]")
+    # else:
+    #     main(sys.argv[1])
+    main("../test")
+    # import ncnn
+    # param_path = "../assets/scrfd_10g-opt2.param"
+    # model_path = "../assets/scrfd_10g-opt2.bin"
+    # net = ncnn.Net()
+    # net.load_param(param_path)
+    # net.load_model(model_path)
+    # img = cv2.imread("../test/1.png")
