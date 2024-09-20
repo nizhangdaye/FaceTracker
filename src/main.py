@@ -9,24 +9,24 @@ from utils import is_image_file, is_video_file, print_progress_bar
 from cluster import cluster_faces_for_id
 
 clustering_done = False
-initial_face_boxes = []
-clustered_rects = []
-face_trackers = {}
-face_tracker_ids = {}
+initial_face_boxes = []  # 存储初始检测框
+clustered_rects = []  # 存储聚类后的检测框
+face_trackers = {}  # 存储每个ID对应的追踪器
+face_tracker_ids = {}  # 存储每个追踪器对应的ID
 
 
-def process_file(file_path, detector, result_dir):
+def process_file(file_path: Path, detector: SCRFD, result_dir: Path) -> None:
     if is_image_file(str(file_path)):
         img = cv2.imread(str(file_path))
         print(f"[INFO] Processing image: {file_path}")
         if img is None:
             print(f"[ERROR] cv2.imread {file_path} failed")
             return
-
+        face_objects = []
         prob_threshold = 0.5  # 人脸置信度阈值
         nms_threshold = 0.4  # 非极大值抑制阈值
 
-        face_objects = detector.detect(img, [], prob_threshold, nms_threshold)
+        detector.detect(img, face_objects, prob_threshold, nms_threshold)  # 检测人脸
         detector.draw(img, face_objects)  # 绘制人脸框
 
         output_path = result_dir / (Path(file_path).stem + ".png")
@@ -142,9 +142,9 @@ def main(dir_path):
         result_dir.mkdir()
 
     detector = SCRFD()
-    detector.load(param_path, model_path, True)
+    detector.load(param_path, model_path)
 
-    for entry in Path(dir_path).iterdir():
+    for entry in Path(dir_path).iterdir():  # 遍历目录
         if entry.is_file():
             process_file(entry, detector, result_dir)
 
